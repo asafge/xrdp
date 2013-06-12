@@ -17,7 +17,6 @@ def kill_Process(name):
     ps.wait()
     return
 
-
 def is_tcp_listen(host, port):
     s = socket.socket()
     try:
