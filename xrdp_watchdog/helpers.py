@@ -5,6 +5,7 @@ import os
 import time
 
 
+
 def is_process(name):
     print "Check process: %s \t" % name,
     ps = subprocess.Popen("ps -ef | grep '%s$' | grep -v grep" %name, shell=True, stdout=subprocess.PIPE)
