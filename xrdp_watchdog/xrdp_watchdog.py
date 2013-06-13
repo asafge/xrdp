@@ -1,60 +1,66 @@
-import subprocess
-import socket
-import glob
-import os
-
-import retry
+from retry import *
+from helpers import *
 
 
-def is_process(name):
-    print "Check process: %s \t" % name,
-    ps = subprocess.Popen("ps -ef | grep %s | grep -v grep" %name, shell=True, stdout=subprocess.PIPE)
-    out = ps.stdout.read()
-    ps.stdout.close()
-    ps.wait()
-    if out:
-        print "[OK]"
-        return True
-    else:
-        print "[ERR]"
-        return False
+class RetryException(Exception):
+    pass
+
+xrdp_settings = {'path': '/usr/local/sbin/xrdp', 'host': '0.0.0.0', 'port': '3389'}
+xrdp_sesman_settings = {'path': '/usr/local/sbin/xrdp-sesman', 'host': '127.0.0.1', 'port': '3550'}
+secsvc_path = 'xrdp-secsvc'
+x11rdp_path = 'X11rdp'
 
 
-def kill_process(name):
-    print "Killing %s" %name
-    ps = subprocess.Popen("pkill %s" % name, shell=True)
-    ps.wait()
-
-
-def rm_files(pattern):
-    files_iter = glob.iglob(pattern)
-    for f in files_iter:
-        os.remove(f)
-
-
-def is_tcp_listen(host, port):
-    s = socket.socket()
-    try:
-        print "Check connection: \t",
-        s.connect((host, port))
-        print "[OK]"
-        return True
-    except:
-        print "[ERR]"
-        return False
-
-
-#@retry(Exception, tries=3, delay=3, backoff=2)
+@retry(ExceptionToCheck=RetryException)
 def check_xrdp(path, host, port):
+    print ">> Checking xrdp (main)..."
     if is_process(path):
-        if not is_tcp_listen(host, port):
+        if is_tcp_listen(host, port):
+            print ">> xrdp up and running"
+        else:
+            print ">> xrdp test failed"
             kill_process(path)
-            rm_files("/var/run/xrdp.pid")
-            #rm_files("/var/tmp/.xrdp/xrdp-[^sescv")
+            raise RetryException
     else:
-        return 
+            print ">> xrdp test failed"
+            rm_files("/var/run/xrdp.pid")
+            #TODO: rm_files("/tmp/.xrdp/xrdp-?")
+            kill_xrdp_sesman()
+            start_process(path)
+            check_xrdp_sesman(**xrdp_sesman_settings)
+            raise RetryException
+
+
+@retry(ExceptionToCheck=RetryException)
+def check_xrdp_sesman(path, host, port):
+    print ">> Checking xrdp-sesman..."
+    if is_process(path):
+        if is_tcp_listen(host, port):
+            print "[OK]"
+        else:
+            print ">> xrdp test failed"
+            kill_xrdp_sesman()
+            raise RetryException
+    else:
+        rm_files("/var/run/xrdp-sesman.pid")
+        rm_files("/tmp/.xrdp/xrdp-sesman*")
+        # TODO: Cleanup unused X11rdp locks
+        start_process(path)
+        raise RetryException
+
+
+def kill_xrdp_sesman():
+    print ">> killing xrdp-sesman..."
+    kill_process("startwm.sh")
+    sleep(5)
+    kill_process("xrdp")
+    kill_process("xrdp-sesman")
+    kill_process(secsvc_path)
+    kill_process(x11rdp_path)
 
 
 if __name__ == "__main__":
-    check_xrdp("/usr/local/sbin/xrdp", "0.0.0.0", "3389")
+    try:
+        check_xrdp(**xrdp_settings)
+    except RetryException: pass
 
