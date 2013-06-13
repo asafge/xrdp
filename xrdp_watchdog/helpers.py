@@ -34,9 +34,14 @@ def kill_process(name):
 
 
 def rm_files(pattern):
-    files_iter = glob.iglob(pattern)
-    for f in files_iter:
-        os.remove(f)
+    print "Removing files: %s \t" % pattern,
+    try:
+        files_iter = glob.iglob(pattern)
+        for f in files_iter:
+            os.remove(f)
+        print "[OK]"
+    except OSError:
+        print "[ERR]"
 
 
 def is_tcp_listen(host, port):
