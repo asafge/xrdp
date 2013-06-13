@@ -20,8 +20,8 @@ def check_xrdp(path, host, port):
             raise RetryException(">> Retest needed")
     else:
             rm_files("/var/run/xrdp.pid")
-            rm_files("/tmp/.xrdp/*")
             kill_xrdp_sesman()
+            rm_files("/tmp/.xrdp/*")
             start_process(path)
             check_xrdp_sesman(**xrdp_sesman_settings)
             raise RetryException(">> Retest needed")

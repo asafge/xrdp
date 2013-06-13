@@ -34,14 +34,14 @@ def kill_process(name):
 
 def rm_files(pattern):
     flag = True
-    try:
-        for f in glob.iglob(pattern):
+    for f in glob.iglob(pattern):
+        try:
+            os.remove(f)
+        except OSError:
             try:
-                os.remove(f)
-            except OSError:
                 shutil.rmtree(f)
-    except OSError:
-        flag = False
+            except OSError:
+                flag = False
     return print_row("Removing files", pattern, flag)
 
 
