@@ -21,8 +21,8 @@ def is_process(name, silent=False, invert=False):
 
 def start_process(name, silent=False):
     devnull = open('/dev/null', 'w')
-    ps = subprocess.Popen(name, stdout=devnull)
-    sleep(3, silent=True)
+    subprocess.Popen(name, shell=True, stdout=devnull)
+    sleep(10, silent=True)
     return print_row("Starting process", name, is_process(name))
 
 
