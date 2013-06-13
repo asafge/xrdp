@@ -2,6 +2,7 @@ import subprocess
 import socket
 import glob
 import os
+import shutil
 import time
 
 
@@ -35,7 +36,10 @@ def rm_files(pattern):
     flag = True
     try:
         for f in glob.iglob(pattern):
-            os.remove(f)
+            try:
+                os.remove(f)
+            except OSError:
+                shutil.rmtree(f)
     except OSError:
         flag = False
     return print_row("Removing files", pattern, flag)
