@@ -17,14 +17,14 @@ def check_xrdp(path, host, port):
     if is_process(path):
         if not is_tcp_listen(host, port):
             kill_process(path)
-            raise RetryException
+            raise RetryException(">> Retest needed")
     else:
             rm_files("/var/run/xrdp.pid")
             #TODO: rm_files("/tmp/.xrdp/xrdp-?")
             kill_xrdp_sesman()
             start_process(path)
             check_xrdp_sesman(**xrdp_sesman_settings)
-            raise RetryException(">> Failed")
+            raise RetryException(">> Retest needed")
 
 
 @retry(ExceptionToCheck=RetryException)
@@ -33,19 +33,18 @@ def check_xrdp_sesman(path, host, port):
     if is_process(path):
         if not is_tcp_listen(host, port):
             kill_xrdp_sesman()
-            raise RetryException(">> Failed")
+            raise RetryException(">> Retest needed")
     else:
         rm_files("/var/run/xrdp-sesman.pid")
         rm_files("/tmp/.xrdp/xrdp-sesman*")
         # TODO: Cleanup unused X11rdp locks
         start_process(path)
-        raise RetryException(">> Failed")
+        raise RetryException(">> Retest needed")
 
 
 def kill_xrdp_sesman():
-    print ">> killing xrdp-sesman..."
     kill_process("startwm.sh")
-    sleep(5)
+    sleep(2, silent=True)
     kill_process("xrdp")
     kill_process("xrdp-sesman")
     kill_process(secsvc_path)
