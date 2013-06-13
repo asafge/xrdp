@@ -15,6 +15,12 @@ if test "x$with_systemdsystemunitdir" != xno; then
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
+#Dualmon support
+AC_ARG_ENABLE(dualmon, AS_HELP_STRING([--enable-dualmon],
+              [Build with dualmon support (when connecting with /span) (default: no)]),
+              [dualmon=true], [dualmon=false])
+AM_CONDITIONAL(SESMAN_DUALMON, [test x$dualmon = xtrue])
+
 AC_ARG_ENABLE(nopam, AS_HELP_STRING([--enable-nopam],
               [Build no PAM support (default: no)]),
               [nopam=true], [nopam=false])
@@ -35,10 +41,6 @@ AC_ARG_ENABLE(freerdp1, AS_HELP_STRING([--enable-freerdp1],
               [Build freerdp1 module (default: no)]),
               [freerdp1=true], [freerdp1=false])
 AM_CONDITIONAL(XRDP_FREERDP1, [test x$freerdp1 = xtrue])
-AC_ARG_ENABLE(neutrinordp, AS_HELP_STRING([--enable-neutrinordp],
-              [Build neutrinordp module (default: no)]),
-              [neutrinordp=true], [neutrinordp=false])
-AM_CONDITIONAL(XRDP_NEUTRINORDP, [test x$neutrinordp = xtrue])
 AC_ARG_ENABLE(jpeg, AS_HELP_STRING([--enable-jpeg],
               [Build jpeg module (default: no)]),
               [jpeg=true], [jpeg=false])
@@ -73,19 +75,26 @@ then
   fi
 fi
 
-AC_CHECK_MEMBER([struct in6_addr.s6_addr],
-                [],
-                [AC_DEFINE(NO_ARPA_INET_H_IP6, 1, [for IPv6])],
-                [#include <arpa/inet.h>])
-
 if test "x$enable_nopam" = "xyes"
 then
   AC_DEFINE([USE_NOPAM],1,[Disable PAM])
 fi
 
+#check if dualmon should build
+if test "x$enable_dualmon" = "xyes"
+then
+  AC_DEFINE([SESMAN_DUALMON],1,[Enable Dualmon])
+fi
+
+
 AS_IF( [test "x$enable_freerdp1" = "xyes"] , [PKG_CHECK_MODULES(FREERDP, freerdp >= 1.0.0)] )
 
-AS_IF( [test "x$enable_neutrinordp" = "xyes"] , [PKG_CHECK_MODULES(FREERDP, freerdp >= 1.0.0)] )
+#checking for libXinerama
+if ! test -z "$enable_dualmon"
+then
+    AC_CHECK_HEADER([X11/extensions/Xinerama.h], [],
+    [AC_MSG_ERROR([please install libXinerama or libXinerama-devel])])
+fi
 
 # checking for libjpeg
 if ! test -z "$enable_jpeg"
@@ -129,7 +138,6 @@ AC_CONFIG_FILES([Makefile
                  xup/Makefile
                  mc/Makefile
                  freerdp1/Makefile
-                 neutrinordp/Makefile
                  xrdp/Makefile
                  sesman/Makefile
                  sesman/libscp/Makefile
@@ -141,11 +149,10 @@ AC_CONFIG_FILES([Makefile
                  docs/man/Makefile
                  instfiles/Makefile
                  instfiles/pam.d/Makefile
-		 instfiles/init.d/Makefile
-		 instfiles/default/Makefile
                  genkeymap/Makefile
                  xrdpapi/Makefile
                  xrdpvr/Makefile
+      		     dualmon/Makefile
 ])
 #                 fontdump/Makefile
 #                 xrdp/cursors/Makefile

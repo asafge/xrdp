@@ -6,16 +6,16 @@ else
 FREERDPDIR =
 endif
 
-if XRDP_NEUTRINORDP
-NEUTRINORDPDIR = neutrinordp
-else
-NEUTRINORDPDIR =
-endif
-
 if XRDP_XRDPVR
 XRDPVRDIR = xrdpvr
 else
 XRDPVRDIR =
+endif
+
+if SESMAN_DUALMON
+DUALMONDIR = dualmon
+else
+DUALMONDIR =
 endif
 
 SUBDIRS = \
@@ -25,7 +25,6 @@ SUBDIRS = \
   xup \
   mc \
   $(FREERDPDIR) \
-  $(NEUTRINORDPDIR) \
   libxrdp \
   xrdp \
   sesman \
@@ -34,4 +33,5 @@ SUBDIRS = \
   instfiles \
   genkeymap \
   xrdpapi \
-  $(XRDPVRDIR)
+  $(XRDPVRDIR) \
+  $(DUALMONDIR)

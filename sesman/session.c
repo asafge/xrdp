@@ -33,8 +33,8 @@
 extern tbus g_sync_event;
 extern unsigned char g_fixedkey[8];
 extern struct config_sesman *g_cfg; /* in sesman.c */
-extern int g_sck; /* in sesman.c */
-extern int g_thread_sck; /* in thread.c */
+extern int g_sck;
+extern int g_thread_sck;
 struct session_chain *g_sessions;
 int g_session_count;
 
@@ -452,8 +452,8 @@ session_start_fork(int width, int height, int bpp, char *username,
     else if (pid == 0) /* child sesman */
     {
         g_tcp_close(g_sck);
-        g_tcp_close(g_thread_sck);
-        auth_start_session(data, display);
+	g_tcp_close(g_thread_sck); 
+	auth_start_session(data, display);
         g_sprintf(geometry, "%dx%d", width, height);
         g_sprintf(depth, "%d", bpp);
         g_sprintf(screen, ":%d", display);
@@ -586,6 +586,11 @@ session_start_fork(int width, int height, int bpp, char *username,
                 }
                 else if (type == SESMAN_SESSION_TYPE_XRDP)
                 {
+			#if defined(SESMAN_DUALMON)
+			       // Dualmon for x11RDP
+                	xrdp_handle_dualmon(width, height, display);
+			#endif
+
                     xserver_params = list_create();
                     xserver_params->auto_free = 1;
                     /* these are the must have parameters */
@@ -706,6 +711,43 @@ session_reconnect_fork(int display, char *username)
     return display;
 }
 
+/******************************************************************************/
+#if defined(SESMAN_DUALMON)
+#define DUALMON_RATIO 2.0
+int APP_CC
+xrdp_handle_dualmon(int width, int height, int display)
+{
+	double ratio = ((double)width) / ((double)height);
+	char fx_path[256];
+	g_snprintf(fx_path, 255, "%s/.fakexinerama", g_getenv("HOME"));
+
+	log_message(LOG_LEVEL_INFO, "Checking dualmon configuration, ratio is %f", ratio);
+	if (ratio > DUALMON_RATIO)
+	{
+		int fd = g_file_open(fx_path);
+		if (fd != -1)
+		{
+			width = width / 2;
+
+			char fx_data[256];
+			g_sprintf(fx_data, "2\n0 0 %d %d\n%d 0 %d %d\n\0", width, height, width, width, height);
+			g_file_write(fd, fx_data, g_strlen(fx_data));
+			g_file_close(fd);
+
+			log_message(LOG_LEVEL_INFO, "Created fake xinerama configuration file in %s.", fx_path);
+		}
+		else
+		{
+			log_message(LOG_LEVEL_ERROR, "Failed creating fake xinerama file.");
+		}
+	}
+	else
+	{
+		g_file_delete(fx_path);
+	}
+	return 0;
+}
+#endif
 /******************************************************************************/
 /* called by a worker thread, ask the main thread to call session_sync_start
    and wait till done */
