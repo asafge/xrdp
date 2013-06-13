@@ -16,7 +16,7 @@ def is_process(name, silent=False, invert=False):
     out = ps.communicate()
     if out: out = out[0].strip()
     result = (len(out) is 0) if invert else (len(out) > 0)
-    return print_row("Check process", name, result) if not silent else result
+    return print_row("Checking process", name, result) if not silent else result
 
 
 def start_process(name, silent=False):
@@ -29,7 +29,7 @@ def start_process(name, silent=False):
 def kill_process(name):
     ps = subprocess.Popen("pkill %s" % name, shell=True)
     ps.communicate()
-    return print_row("Killing", name, is_process(name, silent=True, invert=True))
+    return print_row("Killing process", name, is_process(name, silent=True, invert=True))
 
 
 def rm_files(pattern):
@@ -49,7 +49,6 @@ def is_tcp_listen(host, port):
     s = socket.socket()
     flag = True
     try:
-        sleep(2, silent=True)
         s.connect((str(host), int(port)))
     except socket.error:
         flag = False
