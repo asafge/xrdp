@@ -41,6 +41,10 @@ AC_ARG_ENABLE(freerdp1, AS_HELP_STRING([--enable-freerdp1],
               [Build freerdp1 module (default: no)]),
               [freerdp1=true], [freerdp1=false])
 AM_CONDITIONAL(XRDP_FREERDP1, [test x$freerdp1 = xtrue])
+AC_ARG_ENABLE(neutrinordp, AS_HELP_STRING([--enable-neutrinordp],
+              [Build neutrinordp module (default: no)]),
+              [neutrinordp=true], [neutrinordp=false])
+AM_CONDITIONAL(XRDP_NEUTRINORDP, [test x$neutrinordp = xtrue]) 
 AC_ARG_ENABLE(jpeg, AS_HELP_STRING([--enable-jpeg],
               [Build jpeg module (default: no)]),
               [jpeg=true], [jpeg=false])
@@ -88,6 +92,8 @@ fi
 
 
 AS_IF( [test "x$enable_freerdp1" = "xyes"] , [PKG_CHECK_MODULES(FREERDP, freerdp >= 1.0.0)] )
+
+AS_IF( [test "x$enable_neutrinordp" = "xyes"] , [PKG_CHECK_MODULES(FREERDP, freerdp >= 1.0.0)] ) 
 
 #checking for libXinerama
 if ! test -z "$enable_dualmon"
@@ -138,6 +144,7 @@ AC_CONFIG_FILES([Makefile
                  xup/Makefile
                  mc/Makefile
                  freerdp1/Makefile
+                 neutrinordp/Makefile 
                  xrdp/Makefile
                  sesman/Makefile
                  sesman/libscp/Makefile
@@ -149,6 +156,8 @@ AC_CONFIG_FILES([Makefile
                  docs/man/Makefile
                  instfiles/Makefile
                  instfiles/pam.d/Makefile
+                 instfiles/init.d/Makefile
+                 instfiles/default/Makefile 
                  genkeymap/Makefile
                  xrdpapi/Makefile
                  xrdpvr/Makefile
