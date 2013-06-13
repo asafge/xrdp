@@ -2,7 +2,7 @@ import time
 from functools import wraps
 
 
-def retry(ExceptionToCheck, tries=2, delay=4, backoff=0, logger=None):
+def retry(ExceptionToCheck, tries=2, delay=3, backoff=0, logger=None):
     """Retry calling the decorated function using an exponential backoff.
 
     http://www.saltycrane.com/blog/2009/11/trying-out-retry-decorator-python/
@@ -30,7 +30,7 @@ def retry(ExceptionToCheck, tries=2, delay=4, backoff=0, logger=None):
                 try:
                     return f(*args, **kwargs)
                 except ExceptionToCheck, e:
-                    msg = "%s, Retrying in %d seconds..." % (str(e), mdelay)
+                    msg = "%s, retrying in %d seconds..." % (str(e), mdelay)
                     if logger:
                         logger.warning(msg)
                     else:
