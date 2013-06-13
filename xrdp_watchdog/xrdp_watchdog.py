@@ -53,6 +53,7 @@ def kill_xrdp_sesman():
 if __name__ == "__main__":
     try:
         check_xrdp(**xrdp_settings)
+        check_xrdp_sesman(**xrdp_sesman_settings)
         print ">> Done and all is set"
     except RetryException:
         print ">> Done, failed"
