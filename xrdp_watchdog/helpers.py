@@ -22,7 +22,7 @@ def is_process(name, silent=False, invert=False):
 def start_process(name, silent=False):
     devnull = open('/dev/null', 'w')
     subprocess.Popen(name, shell=True, stdout=devnull)
-    sleep(10, silent=True)
+    sleep(5, silent=True)
     return print_row("Starting process", name, is_process(name))
 
 
@@ -45,9 +45,10 @@ def rm_files(pattern):
 def is_tcp_listen(host, port):
     s = socket.socket()
     flag = True
-    try: 
-        s.connect((host, int(port)))
-    except:
+    try:
+        sleep(3, silent=True)
+        s.connect((str(host), int(port)))
+    except socket.error:
         flag = False
     return print_row("Checking TCP", "%s:%s" %(host,port), flag)
 

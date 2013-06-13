@@ -6,7 +6,7 @@ class RetryException(Exception):
     pass
 
 xrdp_settings = {'path': '/usr/local/sbin/xrdp', 'host': '0.0.0.0', 'port': '3389'}
-xrdp_sesman_settings = {'path': '/usr/local/sbin/xrdp-sesman', 'host': '127.0.0.1', 'port': '3550'}
+xrdp_sesman_settings = {'path': '/usr/local/sbin/xrdp-sesman', 'host': '0.0.0.0', 'port': '3350'}
 secsvc_path = 'xrdp-secsvc'
 x11rdp_path = 'X11rdp'
 
@@ -44,7 +44,6 @@ def check_xrdp_sesman(path, host, port):
 
 def kill_xrdp_sesman():
     kill_process("startwm.sh")
-    sleep(2, silent=True)
     kill_process("xrdp")
     kill_process("xrdp-sesman")
     kill_process(secsvc_path)
