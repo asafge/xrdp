@@ -12,9 +12,8 @@ def print_row(action, param, status):
 
 def is_process(name, silent=False, invert=False):
     ps = subprocess.Popen("ps -ef | grep '%s$' | grep -v grep" %name, shell=True, stdout=subprocess.PIPE)
-    out = ps.stdout.read().strip()
-    ps.stdout.close()
-    ps.wait()
+    out = ps.communicate()
+    if out: out = out[0].strip()
     result = (len(out) is 0) if invert else (len(out) > 0)
     return print_row("Check process", name, result) if not silent else result
 
@@ -28,7 +27,7 @@ def start_process(name, silent=False):
 
 def kill_process(name):
     ps = subprocess.Popen("pkill %s" % name, shell=True)
-    ps.wait()
+    ps.communicate()
     return print_row("Killing", name, is_process(name, silent=True, invert=True))
 
 
@@ -46,7 +45,7 @@ def is_tcp_listen(host, port):
     s = socket.socket()
     flag = True
     try:
-        sleep(3, silent=True)
+        sleep(2, silent=True)
         s.connect((str(host), int(port)))
     except socket.error:
         flag = False
