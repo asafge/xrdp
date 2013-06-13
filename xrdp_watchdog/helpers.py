@@ -5,58 +5,55 @@ import os
 import time
 
 
-def is_process(name):
-    print "Check process: %s \t" % name,
+def print_row(action, param, status):
+    print "   %-10s %-40s %-40s" % ("[OK]" if status else "[ER]", action, param)
+    return status
+
+
+def is_process(name, silent=False, invert=False):
     ps = subprocess.Popen("ps -ef | grep '%s$' | grep -v grep" %name, shell=True, stdout=subprocess.PIPE)
     out = ps.stdout.read()
     ps.stdout.close()
     ps.wait()
-    if out:
-        print "[OK]"
-        return True
-    else:
-        print "[ERR]"
-        return False
+    result = not out if invert else out
+    return print_row("Check process", name, result) if not silent else out
 
 
-def start_process(name):
-    print "Starting process: %s \t" % name,
+def start_process(name, silent=False):
     devnull = open('/dev/null', 'w')
     ps = subprocess.Popen(name, stdout=devnull)
-    sleep(3)
-    return is_process(name)
+    sleep(3, silent=True)
+    return print_row("Starting process", name, is_process(name))
 
 
 def kill_process(name):
-    print "Killing %s" %name
     ps = subprocess.Popen("pkill %s" % name, shell=True)
     ps.wait()
+    return print_row("Killing", name, is_process(name, invert=True))
 
 
 def rm_files(pattern):
-    print "Removing files: %s \t" % pattern,
+    flag = True
     try:
-        files_iter = glob.iglob(pattern)
-        for f in files_iter:
+        for f in glob.iglob(pattern):
             os.remove(f)
-        print "[OK]"
     except OSError:
-        print "[ERR]"
+        flag = False
+    return print_row("Removing files", pattern, flag)
 
 
 def is_tcp_listen(host, port):
     s = socket.socket()
-    try:
-        print "Check TCP connection to %s:%s: \t" %(host,port), 
+    flag = True
+    try: 
         s.connect((host, int(port)))
-        print "[OK]"
-        return True
     except:
-        print "[ERR]"
-        return False
+        flag = False
+    return print_row("Checking TCP", "%s:%s" %(host,port), flag)
 
 
-def sleep(sec):
-    print "Waiting %s sec..." %sec
+def sleep(sec, silent=False):
+    if not silent:
+        print_row("Waiting", "%s sec" % (sec), True)
     time.sleep(sec)
 

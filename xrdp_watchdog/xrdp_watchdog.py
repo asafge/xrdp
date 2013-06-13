@@ -15,14 +15,10 @@ x11rdp_path = 'X11rdp'
 def check_xrdp(path, host, port):
     print ">> Checking xrdp (main)..."
     if is_process(path):
-        if is_tcp_listen(host, port):
-            print ">> xrdp up and running"
-        else:
-            print ">> xrdp test failed"
+        if not is_tcp_listen(host, port):
             kill_process(path)
             raise RetryException
     else:
-            print ">> xrdp test failed"
             rm_files("/var/run/xrdp.pid")
             #TODO: rm_files("/tmp/.xrdp/xrdp-?")
             kill_xrdp_sesman()
@@ -35,10 +31,7 @@ def check_xrdp(path, host, port):
 def check_xrdp_sesman(path, host, port):
     print ">> Checking xrdp-sesman..."
     if is_process(path):
-        if is_tcp_listen(host, port):
-            print "[OK]"
-        else:
-            print ">> xrdp test failed"
+        if not is_tcp_listen(host, port):
             kill_xrdp_sesman()
             raise RetryException
     else:
